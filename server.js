@@ -1,18 +1,40 @@
 const express = require("express");
-const expressGraphQL = require('express-graphql').graphqlHTTP
+const expressGraphQL = require("express-graphql").graphqlHTTP;
 const app = express();
-const { GraphQLSchema, GraphQLObjectType, GraphQLString } = require("graphql");
+const {
+  GraphQLSchema,
+  GraphQLObjectType,
+  GraphQLString,
+  GraphQLList,
+  GraphQLInt,
+  GraphQLNonNull,
+} = require("graphql");
+const { authors, books } = require("./mocks/data.js");
+
+const BookType = new GraphQLObjectType({
+  name: "Book",
+  description: "A book written by an author",
+  fields: () => ({
+    id: { type: new GraphQLNonNull(GraphQLInt) },
+    name: { type: new GraphQLNonNull(GraphQLString) },
+    authorId: { type: new GraphQLNonNull(GraphQLInt) },
+  }),
+});
+
+const RootQueryType = new GraphQLObjectType({
+  name: "Query",
+  description: "Root Query",
+  fields: () => ({
+    books: {
+      type: new GraphQLList(BookType),
+      description: "List of books",
+      resolve: () => books,
+    },
+  }),
+});
 
 const schema = new GraphQLSchema({
-  query: new GraphQLObjectType({
-    name: "test",
-    fields: () => ({
-      message: {
-        type: GraphQLString,
-        resolve: () => "returned test",
-      },
-    }),
-  }),
+  query: RootQueryType,
 });
 
 app.use(
